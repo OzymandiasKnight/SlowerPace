@@ -1,0 +1,15 @@
+api-version: 1.16
+name: SlowerPace
+version: 1.0
+author: OzymandiasKnight
+main: fr.ozymandiasknight.slowerpace.Main
+commands:
+   job-info:
+      description: Find your jobs levels
+   job-add:
+      description: Add a parameter
+      permission: job.use
+   job-craft:
+      description: Open job's crafts
+   home:
+      description: Set a home to teleport
