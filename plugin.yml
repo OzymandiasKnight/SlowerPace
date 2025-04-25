@@ -13,3 +13,5 @@ commands:
       description: Open job's crafts
    home:
       description: Set a home to teleport
+   tpa:
+      description: Send teleport requestes

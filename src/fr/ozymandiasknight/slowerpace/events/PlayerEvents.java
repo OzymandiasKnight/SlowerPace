@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Golem;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -12,6 +14,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.FurnaceExtractEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -19,6 +22,8 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
@@ -47,7 +52,7 @@ public class PlayerEvents implements Listener {
 	
 	public PlayerEvents(Main plugin) {
 		this.plugin = plugin;
-		basic_stones = new ArrayList<Material>(Arrays.asList(Material.STONE, Material.SANDSTONE, Material.GRANITE, Material.ANDESITE, Material.DIORITE));
+		basic_stones = new ArrayList<Material>(Arrays.asList(Material.STONE, Material.SANDSTONE, Material.GRANITE, Material.ANDESITE, Material.DIORITE,Material.NETHERRACK));
 		intermediate_stones = new ArrayList<Material>(Arrays.asList(Material.COAL_ORE, Material.LAPIS_ORE, Material.REDSTONE_ORE, Material.NETHER_QUARTZ_ORE));		
 		advanced_stones = new ArrayList<Material>(Arrays.asList(Material.DIAMOND_ORE, Material.EMERALD_ORE, Material.NETHER_GOLD_ORE));
 		crops_blocks = new ArrayList<Material>(Arrays.asList(Material.WHEAT, Material.MELON, Material.CARROTS, Material.PUMPKIN));
@@ -357,7 +362,8 @@ public class PlayerEvents implements Listener {
 				if (event.getItem().getItemMeta().getDisplayName().startsWith("§b")) {
 					if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 						if (event.getItem().getType() == Material.GHAST_SPAWN_EGG) {
-							event.getPlayer().getWorld().spawnEntity(event.getClickedBlock().getLocation().add(0, 1, 0), EntityType.IRON_GOLEM);
+							Golem golem = (Golem) event.getPlayer().getWorld().spawnEntity(event.getClickedBlock().getLocation().add(0, 1, 0), EntityType.IRON_GOLEM);
+							golem.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, Integer.MAX_VALUE, 2, true));
 							event.getPlayer().getInventory().setItemInMainHand(remove_one_amount(event.getItem()));;
 						}
 						if (event.getItem().getType() == Material.BLAZE_ROD) {
@@ -417,7 +423,6 @@ public class PlayerEvents implements Listener {
 				plugin.informations.add_player_xp(event.getPlayer(), "farmer", 25);
 				Float multiplicator = (float) plugin.informations.get_player_parameter(event.getPlayer().getUniqueId().toString(), "farmer_lvl");
 				multiplicator = 1.0f + multiplicator/100;
-				System.out.println(multiplicator);
 				if (Math.random()*multiplicator > 1.0) {
 					
 					if (Math.random()*multiplicator > 1.03) {
@@ -431,9 +436,44 @@ public class PlayerEvents implements Listener {
 					else {					
 						player.getWorld().spawnEntity(event.getHook().getLocation(),EntityType.GUARDIAN);
 					}
+					event.getHook().remove();
 					event.setCancelled(true);
 				}
 			}
+		}
+	}
+	
+	@EventHandler
+	public void OnShootBow(EntityShootBowEvent event) {
+		if (event.getEntity() instanceof Player && event.getProjectile() instanceof Arrow) {
+			Player player = (Player) event.getEntity();
+			Float multiplicator = (float) plugin.informations.get_player_parameter(player.getUniqueId().toString(), "hunter_lvl");
+			multiplicator = 1.0f + multiplicator/100;
+			System.out.println(multiplicator);
+			if (Math.random()*multiplicator > 1.0) {
+				player.getInventory().addItem(new ItemStack(Material.ARROW));
+			}
+			
+			if (event.getBow().getItemMeta().getDisplayName().startsWith("§b")) {
+				Arrow arrow = (Arrow) event.getProjectile();
+				ItemStack bow = event.getBow();
+				if (bow.getItemMeta() instanceof Damageable) {
+					arrow.addPassenger(player);
+					Damageable meta = (Damageable) bow.getItemMeta();
+					meta.setDamage(meta.getDamage()+10);
+					bow.setItemMeta((ItemMeta) meta);
+					
+				}
+			}
+		}
+	}
+	
+	@EventHandler
+	public void OnItemDurability(PlayerItemDamageEvent event) {
+		Float multiplicator = (float) plugin.informations.get_player_parameter(event.getPlayer().getUniqueId().toString(), "builder_lvl");
+		multiplicator = 1.0f + multiplicator/100;
+		if (Math.random()*multiplicator > 1.0) {
+			event.setCancelled(true);
 		}
 	}
 }

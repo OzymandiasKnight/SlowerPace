@@ -21,11 +21,16 @@ public class HomeCommand implements CommandExecutor {
 			if (args.length == 1) {
 				System.out.println(args[0].toString());
 				if (args[0].equals("set")) {
+					if (player.getWorld().equals(player.getServer().getWorlds().get(0))) {
+						plugin.informations.set_player_parameter(id, "home_x", player.getLocation().getBlockX());
+						plugin.informations.set_player_parameter(id, "home_y", player.getLocation().getBlockY());
+						plugin.informations.set_player_parameter(id, "home_z", player.getLocation().getBlockZ());
+						player.sendMessage("§aHome set");					
+					}
+					else {
+						player.sendMessage("§cYou can only set a home in the main world");
+					}
 					//Set Home
-					plugin.informations.set_player_parameter(id, "home_x", player.getLocation().getBlockX());
-					plugin.informations.set_player_parameter(id, "home_y", player.getLocation().getBlockY());
-					plugin.informations.set_player_parameter(id, "home_z", player.getLocation().getBlockZ());
-					player.sendMessage("§aHome set");
 				}
 				else {
 					player.sendMessage("§cUse : /home set");

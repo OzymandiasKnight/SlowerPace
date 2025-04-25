@@ -129,7 +129,6 @@ public class ServerInfos {
 		}
 		else {
 			if (condition.equalsIgnoreCase("level")) {
-				System.out.println("Fonctionne");
 				String id = player.getUniqueId().toString();
 				return (get_player_parameter(id, "level") >= cap);
 			}
